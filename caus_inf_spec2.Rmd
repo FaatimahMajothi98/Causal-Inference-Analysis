@@ -1,0 +1,57 @@
+---
+title: "Gaming and Mental Health - Causal Inference Project"
+subtitle: "By Faatimah Bint-Azhar"
+output: html_notebook
+
+---
+
+## Introduction
+
+This **`R` notebook** is a continuation of the Causal Inference portfolio project from the **Jupyter notebook** file:
+
+
+This project follows the principles of a Causal Inference workflow to investigate the relationship between digital gaming and mental health. We aim to complete a clean data analysis project that showcases an understanding of causal inference analysis along with proficiency in the use of python libraries and machine learning models. 
+
+
+In the previous half of the project, we covered sections A-B of the project scope:
+
+#### **Project Scope:**
+
+**Jupyter Notebook (Previous):**
+
+- A: Define the problem and variables:
+  -	Create a detailed DAG (directional acyclical graph) using knowledge and assumptions about the data generating process (DGP).
+  -	Identify the treatment, outcome, and confounders from the DAG.
+- B: Import, explore and preprocess the data.
+    - Check the available data against assumptions of casual inference.
+
+**R Notebook (Current):**
+
+- B : Check final assumption: Overlap.
+- C: Estimate treatment effects (ATE, ATT) using the chosen machine learning model(s).
+- D: Validate the model results and check refuters.
+- Conclusion: Interpret and communicate the results.
+
+
+Continuing from section B, we will finish tackling the final assumption of causal inference, **Overlap (Positivity)**:
+
+#### **Checking assumptions of causal inference:**
+
+- **SUTVA (Stable Unit Treatment Value Assumption):** We assume that each individual's outcome depends only on their own treatment status and that the treatment is applied consistently across all individuals.
+- **Exchangeability/Ignorability:** We have listed potential confounders that may affect both the **treatment** (X) and the **outcome** (Y). We will extract these variables from our data and adjust for them in the analysis to help satisfy the ignorability assumption.
+- **No Multicollinearity:** We will use a **heatmap** and **pair plot** to examine correlations among the confounders. High correlations may indicate multicollinearity, which can affect the stability and interpretability of our model.
+- **Overlap (Positivity):** By plotting the confounders against the treatment (`gaming_hrs`) and outcome (`m_health`) variables, we will check that there is **sufficient overlap in the distribution of confounders** across treatment groups. This ensures that there are both 'treated' and 'untreated' individuals for each value of the confounders.
+
+
+### Setup
+
+```{r}
+# Import libraries
+
+```
+
+In the previous section from the Jupyter notebook [](), we created the treatment (X) and outcome (Y) variables required for estimating our **causal estimand**, the ATE (Average Treatment Effect).
+
+The ATE represents the **average difference in the outcome** (overall mental health,` m_health`) between individuals who have higher gaming hours (our treatment group) and those who have lower gaming hours (our control group), after adjusting for confounders.
+
+By measuring this estimand, we aim to investigate, on average, how increased gaming hours affect mental health score in the population.
