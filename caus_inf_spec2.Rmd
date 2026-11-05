@@ -7,7 +7,7 @@ output: html_notebook
 
 ## Introduction
 
-This **`R` notebook** is a continuation of the Causal Inference portfolio project from the **Jupyter notebook** file:
+This **`R` notebook** is a continuation of the Causal Inference portfolio project from the **Jupyter notebook** file: [caus_inf_spec.ipynb]('https://github.com/FaatimahMajothi98/Causal-Inference-Analysis/blob/master/caus_inf_spec.ipynb')
 
 
 This project follows the principles of a Causal Inference workflow to investigate the relationship between digital gaming and mental health. We aim to complete a clean data analysis project that showcases an understanding of causal inference analysis along with proficiency in the use of python libraries and machine learning models. 
@@ -50,7 +50,7 @@ Continuing from section B, we will finish tackling the final assumption of causa
 
 ```
 
-In the previous section from the Jupyter notebook [](), we created the treatment (X) and outcome (Y) variables required for estimating our **causal estimand**, the ATE (Average Treatment Effect).
+In the previous section from the Jupyter notebook [caus_inf_spec.ipynb]('https://github.com/FaatimahMajothi98/Causal-Inference-Analysis/blob/master/caus_inf_spec.ipynb'), we created the treatment (X) and outcome (Y) variables required for estimating our **causal estimand**, the ATE (Average Treatment Effect).
 
 The ATE represents the **average difference in the outcome** (overall mental health,` m_health`) between individuals who have higher gaming hours (our treatment group) and those who have lower gaming hours (our control group), after adjusting for confounders.
 
