@@ -29,9 +29,7 @@ In the previous half of the project, we covered sections A-B of the project scop
 
 **R Notebook (Current):**
 
-- C: Estimate propensity scores and adjust for confounding
-  - Estimate propensity scores by fitting a model to predict treatment assignment using confounders.
-  - Apply a causal inference method.
+- C: Adjust for confounding (no propensity scores calculated since the data was randomly selected)
   - Assess balance between treatment and control groups after adjustment.
 - D: Estimate and validate the causal effect
   - Fit an outcome model to estimate the causal effect (ATE) using the adjusted data.
@@ -70,12 +68,14 @@ options(warn = -1)
 caus_df <- read.csv('caus_df.csv')
 head(caus_df)
 ```
+### **Section C:** Checking Balance and Adjustments
+
 
 In the previous section from the Jupyter notebook [caus_inf_spec.ipynb]('https://github.com/FaatimahMajothi98/Causal-Inference-Analysis/blob/master/caus_inf_spec.ipynb'), we created the treatment (X) and outcome (Y) variables required for checking the **overlap** assumption of causal inference
 
-We will use balance plots to look at the 
+We will now use balance plots and tables to check for **overlap**.
 
-But first, we must create a binary column that assigns `1` to rows with gaming hours above 25% of the average gaming hours, and `0` to rows with gaming hours below 25% of the average. We will also rename `gaming_hrs` to `weekly_gaming_hrs` for clarity.
+Before beginning, we must create a binary column that assigns `1` to rows with gaming hours above 25% of the average gaming hours, and `0` to rows with gaming hours below 25% of the average. We will also rename `gaming_hrs` to `weekly_gaming_hrs` for clarity.
 
 ```{r}
 # Create treatment and control group column
@@ -83,7 +83,7 @@ threshold <- mean(caus_df$gaming_hrs) * 0.25
 caus_df$above_25pct_avg <- as.integer(caus_df$gaming_hrs > threshold)
 
 # Rename X variable for clarity
-caus_df %>% rename(weekly_gaming_hrs = gaming_hrs)
+caus_df <- caus_df %>% rename(weekly_gaming_hrs = gaming_hrs)
 
 # Check percentage
 print(mean(caus_df$above_25pct_avg) * 100)
@@ -94,12 +94,62 @@ Next, we will plot balance plots of some of the columns to check the **overlap**
 
 ```{r}
 # Plot balance plots
-bal.plot(x = above_25pct_average ~ age, data = caus_df, var.name = 'screen_time_total')
-bal.plot(x = above_25pct_average ~ age, data = caus_df, var.name = 'income')
-bal.plot(x = above_25pct_average ~ age, data = caus_df, var.name = 'addiction_level')
-bal.plot(x = above_25pct_average ~ age, data = caus_df, var.name = 'age')
+bal.plot(x = above_25pct_avg ~ screen_time_total, data = caus_df, var.name = 'screen_time_total')
+bal.plot(x = above_25pct_avg ~ income, data = caus_df, var.name = 'income')
+bal.plot(x = above_25pct_avg ~ addiction_level, data = caus_df, var.name = 'addiction_level')
+bal.plot(x = above_25pct_avg ~ age, data = caus_df, var.name = 'age')
+```
+Out of the covariates plotted, `addiction_level` has the least overlap across treatment and control groups. This may bias the causal estimates we calculate further down the line. 
+
+We will now plot a numerical balance table to investigate the overlap between treatment and control groups further. For efficiency, we will not be plotting all of the covariates in this table.
+
+We will keep the following in mind when considering the values in the balance plot:
+
+- **Standardized Mean Difference (SMD):** Values close to 0 (usually within ±0.1) mean good balance between groups for that variable.
+- **Variance Ratio:** Ratios between 0.5 and 2 are generally considered acceptable.
+
+```{r}
+# Create balance table
+bal.tab(
+  above_25pct_avg ~ age + income + daily_gaming_hours +
+    years_gaming + sleep_hours + caffeine_intake + exercise_hours +
+    stress_level + anxiety_score + depression_score +
+    social_interaction_score + academic_performance + 
+    work_productivity + addiction_level +
+    multiplayer_ratio + toxic_exposure + violent_games_ratio +
+    night_gaming_ratio + weekend_gaming_hours +
+    friends_gaming_count + online_friends + streaming_hours + 
+    microtransactions_spending + screen_time_total + eye_strain_score +
+    back_pain_score + weekly_gaming_hrs + z_stress +
+    z_anxiety + z_depression + z_loneliness + z_aggression +
+    z_happiness + m_health,
+  data = caus_df,
+  binary = 'std',
+  disp.v.ratio = TRUE
+)
+```
+**Note: Higher values are expected for the `daily_gaming_hours` and `weekly_gaming_hrs` column as the latter column was calculated using data from the former.**
+
+The majority of the values in the numerical balance table have balanced **SMD** and are within the **acceptable variance ratio**, apart from two. In the previous EDA section of the analysis, our pair plot revealed possible multicollinearity between addiction_level and screen_time_total. These two columns are unbalanced and may confound our results if they are not adjusted for
+
+We will use a dimension reduction technique, **PCA (Principal Component Analysis)**, to address this issue, avoiding unstable estimates from these columns. Using PCA, we will extract a the principal component to use as a covariate in our balance checks and models instead of the original imbalanced variables.
+
+This will reduce multicollinearity and while keeping the information from both variables.
+
+```{r}
+# Perform PCA
+pca_vars <- caus_df[, c('addiction_level', 'screen_time_total')]
+pca_vars_scaled <- scale(pca_vars)
+pca_result <- prcomp(pca_vars_scaled)
+caus_df$pca_addiction_screen <- pca_result$x[, 1] # Extract principal component
 ```
 
 The steps required for estimating our **causal estimand**, the ATE (Average Treatment Effect) are now complete. We can proceed to the next section.
 
+
+### **Section D:** Estimating and Validating Causal Effect
+
+
 The ATE represents the **average difference in the outcome** (overall mental health,`m_health`) between individuals who have higher gaming hours (our treatment group) and those who have lower gaming hours (our control group), after adjusting for confounders. By measuring this estimand, we aim to investigate, on average, how increased gaming hours affect mental health score in the population.
+
+### **Conclusion:**

@@ -1,7 +1,7 @@
 ![alt text](infspecbanner.png)
 
 # Inference-Specialist-Portfolio-Project
-### By Faatimah Bint-Azhar
+### By Faatimah Majothi
 
 #### Introduction:
 This project was created for the ["Data Scientist: Inference Specialist" career path](https://www.codecademy.com/enrolled/paths/data-science-inf) portfolio project on [Codecademy](https://www.codecademy.com/learn), as a showcase of the skills developed through the course path.
