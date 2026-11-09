@@ -1,5 +1,5 @@
 ---
-title: "Gaming and Mental Health - Causal Inference Project"
+title: "**Gaming and Mental Health - Causal Inference Project**"
 subtitle: "By Faatimah Majothi"
 output: html_notebook
 
@@ -20,22 +20,22 @@ In the previous half of the project, we covered sections A-B of the project scop
 **Jupyter Notebook (Previous):**
 
 - A: Define the problem and variables
-  - Create a detailed DAG (Directed Acyclic Graph) using knowledge and assumptions about the data generating process (DGP).
+  - Create a detailed **DAG (Directed Acyclic Graph)** using knowledge and assumptions about the **data generating process (DGP)**.
   - Identify the treatment, outcome, and confounders from the DAG.
 - B: Import, explore, and preprocess the data
-  - Import the dataset and perform exploratory data analysis (EDA).
+  - Import the dataset and perform **exploratory data analysis (EDA)**.
   - Check the available data against the assumptions of causal inference.
   - Preprocess the data as needed.
 
 **R Notebook (Current):**
 
-- C: Adjust for confounding (no propensity scores calculated since the data was randomly selected)
-  - Assess balance between treatment and control groups after adjustment.
+- C: Adjust for confounding (**no propensity scores calculated** since the data was randomly selected)
+  - Assess **balance** between treatment and control groups after adjustment.
 - D: Estimate and validate the causal effect
-  - Fit an outcome model to estimate the causal effect (ATE) using the adjusted data.
+  - Fit an outcome model to **estimate the causal effect** (ATE) using the adjusted data.
   - Calculate robust standard errors to account for weighting or matching.
-  - Validate model results and check for robustness using refuters or sensitivity analysis.
-- Conclusion: Interpret and communicate the estimated causal effect of gaming hours on overall mental health.
+  - **Validate model results** and check for robustness using refuters or sensitivity analysis.
+- Conclusion: Interpret and communicate the estimated causal **effect of gaming hours on overall mental health**.
 
 Continuing from section B, we will finish tackling the final assumption of causal inference, **Overlap (Positivity)**:
 
@@ -75,18 +75,18 @@ In the previous section from the Jupyter notebook [caus_inf_spec.ipynb]('https:/
 
 We will now use balance plots and tables to check for **overlap**.
 
-Before beginning, we must create a binary column that assigns `1` to rows with gaming hours above 25% of the average gaming hours, and `0` to rows with gaming hours below 25% of the average. We will also rename `gaming_hrs` to `weekly_gaming_hrs` for clarity.
+Before beginning, we must create a binary column that assigns `1` to rows with gaming hours **above 15% of the average** gaming hours, and `0` to rows with gaming hours **below 15% of the average**. We will also rename `gaming_hrs` to `weekly_gaming_hrs` for clarity.
 
 ```{r}
 # Create treatment and control group column
-threshold <- mean(caus_df$gaming_hrs) * 0.25
-caus_df$above_25pct_avg <- as.integer(caus_df$gaming_hrs > threshold)
+threshold <- mean(caus_df$gaming_hrs) * 0.15
+caus_df$above_15pct_avg <- as.integer(caus_df$gaming_hrs > threshold)
 
 # Rename X variable for clarity
 caus_df <- caus_df %>% rename(weekly_gaming_hrs = gaming_hrs)
 
 # Check percentage
-print(mean(caus_df$above_25pct_avg) * 100)
+print(mean(caus_df$above_15pct_avg) * 100)
 
 head(caus_df)
 ```
@@ -94,14 +94,14 @@ Next, we will plot balance plots of some of the columns to check the **overlap**
 
 ```{r}
 # Plot balance plots
-bal.plot(x = above_25pct_avg ~ screen_time_total, data = caus_df, var.name = 'screen_time_total')
-bal.plot(x = above_25pct_avg ~ income, data = caus_df, var.name = 'income')
-bal.plot(x = above_25pct_avg ~ addiction_level, data = caus_df, var.name = 'addiction_level')
-bal.plot(x = above_25pct_avg ~ age, data = caus_df, var.name = 'age')
+bal.plot(x = above_15pct_avg ~ screen_time_total, data = caus_df, var.name = 'screen_time_total')
+bal.plot(x = above_15pct_avg ~ income, data = caus_df, var.name = 'income')
+bal.plot(x = above_15pct_avg ~ addiction_level, data = caus_df, var.name = 'addiction_level')
+bal.plot(x = above_15pct_avg ~ age, data = caus_df, var.name = 'age')
 ```
-Out of the covariates plotted, `addiction_level` has the least overlap across treatment and control groups. This may bias the causal estimates we calculate further down the line. 
+Out of the covariates plotted, `addiction_level` has the **least overlap** across treatment and control groups. This may bias the causal estimates we calculate further down the line. 
 
-We will now plot a numerical balance table to investigate the overlap between treatment and control groups further. For efficiency, we will not be plotting all of the covariates in this table.
+We will now plot a **numerical balance table** to investigate the overlap between treatment and control groups further. For efficiency, we will **not** be plotting all of the covariates in this table.
 
 We will keep the following in mind when considering the values in the balance plot:
 
@@ -111,7 +111,7 @@ We will keep the following in mind when considering the values in the balance pl
 ```{r}
 # Create balance table
 bal.tab(
-  above_25pct_avg ~ age + income + daily_gaming_hours +
+  above_15pct_avg ~ age + income + daily_gaming_hours +
     years_gaming + sleep_hours + caffeine_intake + exercise_hours +
     stress_level + anxiety_score + depression_score +
     social_interaction_score + academic_performance + 
@@ -130,11 +130,11 @@ bal.tab(
 ```
 **Note: Higher values are expected for the `daily_gaming_hours` and `weekly_gaming_hrs` column as the latter column was calculated using data from the former.**
 
-The majority of the values in the numerical balance table have balanced **SMD** and are within the **acceptable variance ratio**, apart from two. In the previous EDA section of the analysis, our pair plot revealed possible multicollinearity between addiction_level and screen_time_total. These two columns are unbalanced and may confound our results if they are not adjusted for
+The majority of the values in the numerical balance table have balanced **SMD** and are within the **acceptable variance ratio**, apart from two. In the previous EDA section of the analysis, our pair plot revealed **possible multicollinearity** between `addiction_level` and `screen_time_total`. These two columns are unbalanced and may confound our results if they are not adjusted for.
 
-We will use a dimension reduction technique, **PCA (Principal Component Analysis)**, to address this issue, avoiding unstable estimates from these columns. Using PCA, we will extract a the principal component to use as a covariate in our balance checks and models instead of the original imbalanced variables.
+We will use a dimension reduction technique, **PCA (Principal Component Analysis)**, to address this issue, to avoid unstable estimates from these columns. Using PCA, we will extract the **principal component to use as a covariate** in our balance checks and models instead of the original imbalanced variables.
 
-This will reduce multicollinearity and while keeping the information from both variables.
+This will **reduce multicollinearity** while keeping the information from both variables.
 
 ```{r}
 # Perform PCA
@@ -142,14 +142,86 @@ pca_vars <- caus_df[, c('addiction_level', 'screen_time_total')]
 pca_vars_scaled <- scale(pca_vars)
 pca_result <- prcomp(pca_vars_scaled)
 caus_df$pca_addiction_screen <- pca_result$x[, 1] # Extract principal component
-```
 
-The steps required for estimating our **causal estimand**, the ATE (Average Treatment Effect) are now complete. We can proceed to the next section.
+# Clean and adjust dataframe
+model_df <- caus_df %>% select(-addiction_level, -screen_time_total, -stress_level, -aggression_score, -anxiety_score, -happiness_score, -depression_score, -loneliness_score, -z_stress, -z_anxiety, -z_depression, -z_loneliness, -z_aggression, -z_happiness, -daily_gaming_hours, -weekly_sessions)
+print(colnames(model_df))
+```
+We then repeat the numerical balance table **with the adjusted covariate**:
+
+```{r}
+# Create adjusted balance table 
+bal.tab(
+  above_15pct_avg ~ age + income + 
+    daily_gaming_hours + years_gaming + sleep_hours + 
+    caffeine_intake + exercise_hours +
+    stress_level + anxiety_score + depression_score +
+    social_interaction_score + academic_performance + 
+    work_productivity + multiplayer_ratio + 
+    toxic_exposure + violent_games_ratio +
+    night_gaming_ratio + weekend_gaming_hours +
+    friends_gaming_count + online_friends + streaming_hours + 
+    microtransactions_spending + eye_strain_score +
+    back_pain_score + weekly_gaming_hrs + z_stress +
+    z_anxiety + z_depression + z_loneliness + 
+    z_aggression + z_happiness + m_health,
+  data = caus_df,
+  binary = 'std',
+  disp.v.ratio = TRUE
+)
+```
+All of our covariates are now sufficiently balanced, with the expected exception of the two used to calculate `weekly_gaming_hrs`.
+With this, the preprocessing steps required for estimating our **causal estimand**, the **ATE (Average Treatment Effect)**, are complete. We can proceed to the final section.
 
 
 ### **Section D:** Estimating and Validating Causal Effect
 
-
+We have chosen **ATE (Average Treatment Effect)** as the causal estimand for this analysis.
 The ATE represents the **average difference in the outcome** (overall mental health,`m_health`) between individuals who have higher gaming hours (our treatment group) and those who have lower gaming hours (our control group), after adjusting for confounders. By measuring this estimand, we aim to investigate, on average, how increased gaming hours affect mental health score in the population.
 
+
+First, we will fit our model to estimate the causal effect, ensuring we use the adjusted and preprocessed dataframe `model_df`.
+
+```{r}
+# Get covariates list to paste into model
+vars <- colnames(model_df)
+cat(paste0("", vars, "", collapse = ' + '))
+
+# Fit outcome regression model
+mHealth_mod <- glm(
+  formula = m_health ~ above_15pct_avg + age + income + years_gaming + sleep_hours + caffeine_intake + exercise_hours + social_interaction_score + relationship_satisfaction + academic_performance + work_productivity + multiplayer_ratio + toxic_exposure + violent_games_ratio + mobile_gaming_ratio + night_gaming_ratio + weekend_gaming_hours + friends_gaming_count + online_friends + streaming_hours + esports_interest + microtransactions_spending + parental_supervision + bmi + eye_strain_score + back_pain_score + competitive_rank + weekly_gaming_hrs + pca_addiction_screen,
+  data = model_df
+)
+```
+Next, we will estimate the regression coefficients for our model with robust standard errors.
+```{r}
+# Estimate the regression coefficients with robust standard errors
+coeftest(mHealth_mod, vcov. = vcovHC)
+```
+The results can be broken down as follows:
+
+- The coefficient for `above_15pct_avg`, which represents our average treatment effect (ATE), is **not statistically significant**, as it has a p-value of 0.54. 
+- The value of the causal estimate (-0.00207), indicates that on average, having above 15% of the average weekly gaming hours is associated with a **decrease of approximately 0.002 units** in mental health score compared to being below the threshold, after adjusting for other variables.
+- In a nutshell, the results provide **no strong evidence** to support the hypothesis that being above the 15% threshold has a causal effect on mental health score. Other variables, such as `age` and `years_gaming` show **weak associations** but still **do not meet the 0.05 significance threshold**. 
+
+
 ### **Conclusion:**
+
+Our causal estimate of the ATE found that most of our confounders, including our main predictor `above_15pct_avg`, **do not have a statistically significant effect on the outcome `m_health`** variable, as their **p-values are above the statistical significance threshold of 0.05**. However, a few of the coefficients, such as `age`, `years_gaming`, `weekend_gaming_hours`, `streaming_hours`, and **most importantly, `weekly_gaming_hours`,** have p-values closer to 0.05, which suggests that they may have a weak association with `m_health`.
+
+This result can somewhat be **expected from synthetic data**, such as that which was used in this project, as the distributions are unnaturally even. Reproducing this causal estimation workflow with **real data** may produce 'better' **more significant results** that are indicative of a causal relationship between mental health and gaming hours.
+
+Overall, based on the data used, the results of the model do not provide strong evidence that any single variable in the model is a significant predictor of mental health. 
+
+**Further development possibilities:**
+
+- Use real-life data rather than synthetic.
+- Attempt weighting covariates.
+- Create and compare weighted models.
+- Calculate a different causal estimand.
+
+#### **Links:**
+
+- Codecademy course:[Data Scientist: Inference Specialist Career Path]('https://www.codecademy.com/learn/paths/data-science-inf')
+- Github Repository: [Causal-Inference-Analysis Repo.]('https://github.com/FaatimahMajothi98/Causal-Inference-Analysis')
+
