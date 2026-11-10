@@ -94,9 +94,13 @@ Next, we will plot balance plots of some of the columns to check the **overlap**
 
 ```{r}
 # Plot balance plots
+png('balance_plot1.png', width = 800, height = 600)
 bal.plot(x = above_15pct_avg ~ screen_time_total, data = caus_df, var.name = 'screen_time_total')
+dev.off()
 bal.plot(x = above_15pct_avg ~ income, data = caus_df, var.name = 'income')
+png('balance_plot2.png', width = 800, height = 600)
 bal.plot(x = above_15pct_avg ~ addiction_level, data = caus_df, var.name = 'addiction_level')
+dev.off()
 bal.plot(x = above_15pct_avg ~ age, data = caus_df, var.name = 'age')
 ```
 Out of the covariates plotted, `addiction_level` has the **least overlap** across treatment and control groups. This may bias the causal estimates we calculate further down the line. 
@@ -211,11 +215,13 @@ Lastly, we will check the robustness of the model by checking the residuals with
 residuals <- resid(mHealth_mod)
 fitted <- fitted(mHealth_mod)
 
+png('robustcheck.png', width = 800, height = 600)
 plot(fitted, residuals, 
      xlab = 'Fitted Values', 
      ylab = 'Residuals', 
      main = 'Residuals vs Fitted')
 abline(h = 0, col = 'red')
+dev.off()
 ```
 
 The scatterplot shows a cluster of points toward 0, meaning that many of the predictions are close to the observed values, which is generally positive. However, there are some extreme outliers and the cluster is very tight in the centre, indicating that the model fits some data points better than others. We can conclude that, while the model appears to be generally robust, there is room for development and possible adjustments.
