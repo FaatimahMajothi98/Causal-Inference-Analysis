@@ -71,7 +71,7 @@ head(caus_df)
 ### **Section C:** Checking Balance and Adjustments
 
 
-In the previous section from the Jupyter notebook [caus_inf_spec.ipynb]('https://github.com/FaatimahMajothi98/Causal-Inference-Analysis/blob/master/caus_inf_spec.ipynb'), we created the treatment (X) and outcome (Y) variables required for checking the **overlap** assumption of causal inference
+In the previous section from the Jupyter notebook [caus_inf_spec.ipynb]('https://github.com/FaatimahMajothi98/Causal-Inference-Analysis/blob/master/caus_inf_spec.ipynb'), we created the treatment (X) and outcome (Y) variables required for checking the **overlap** assumption of causal inference.
 
 We will now use balance plots and tables to check for **overlap**.
 
@@ -202,8 +202,23 @@ The results can be broken down as follows:
 
 - The coefficient for `above_15pct_avg`, which represents our average treatment effect (ATE), is **not statistically significant**, as it has a p-value of 0.54. 
 - The value of the causal estimate (-0.00207), indicates that on average, having above 15% of the average weekly gaming hours is associated with a **decrease of approximately 0.002 units** in mental health score compared to being below the threshold, after adjusting for other variables.
-- In a nutshell, the results provide **no strong evidence** to support the hypothesis that being above the 15% threshold has a causal effect on mental health score. Other variables, such as `age` and `years_gaming` show **weak associations** but still **do not meet the 0.05 significance threshold**. 
+- In a nutshell, the results provide **no strong evidence** to support the hypothesis that being above the 15% threshold has a causal effect on mental health score. Other variables, such as `age` and `years_gaming` show **weak associations** but still **do not meet the 0.05 significance threshold**.
 
+Lastly, we will check the robustness of the model by checking the residuals with a scatterplot.
+
+```{r}
+# Get residuals and plot
+residuals <- resid(mHealth_mod)
+fitted <- fitted(mHealth_mod)
+
+plot(fitted, residuals, 
+     xlab = 'Fitted Values', 
+     ylab = 'Residuals', 
+     main = 'Residuals vs Fitted')
+abline(h = 0, col = 'red')
+```
+
+The scatterplot shows a cluster of points toward 0, meaning that many of the predictions are close to the observed values, which is generally positive. However, there are some extreme outliers and the cluster is very tight in the centre, indicating that the model fits some data points better than others. We can conclude that, while the model appears to be generally robust, there is room for development and possible adjustments.
 
 ### **Conclusion:**
 
@@ -218,6 +233,7 @@ Overall, based on the data used, the results of the model do not provide strong 
 - Use real-life data rather than synthetic.
 - Attempt weighting covariates.
 - Create and compare weighted models.
+- Investigate outliers to see if the model needs adjustment.
 - Calculate a different causal estimand.
 
 #### **Links:**
